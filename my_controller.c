@@ -1,293 +1,122 @@
-  /*
+#include <stdio.h>
+#include <webots/supervisor.h>
+#include <webots/robot.h>
+#include <webots/motor.h>
+#include <webots/distance_sensor.h>
+#include <webots/led.h>
+#include <math.h>
+
+#define TIME_STEP 256
+#define QtddSensoresProx 8
+#define QtddLeds 10
   
-   * File:          Controlador.c
-  
-   * Date:
-  
-   * Description:
-  
-   * Author:
-  
-   * Modifications:
-  
-   */
-  
-  
-  
-  /*
-  
-   * You may need to add include files like <webots/distance_sensor.h> or
-  
-   * <webots/motor.h>, etc.
-  
-   */
-  
-  #include <stdio.h>
-  
-  #include <webots/supervisor.h>
-  
-  #include <webots/robot.h>
-  
-  #include <webots/motor.h>
-  
-  #include <webots/distance_sensor.h>
-  
-  #include <webots/led.h>
-  
-  #include <math.h>
-  
-  /*
-  
-   * You may want to add macros here.
-  
-   */
-  
-  #define TIME_STEP 256
-  
-  #define QtddSensoresProx 8
-  
-  #define QtddLeds 10
-  
-  
-  
-  /*
-  
-   * This is the main program.
-  
-   * The arguments of the main function can be specified by the
-  
-   * "controllerArgs" field of the Robot node
-  
-   */
-  
-  int main(int argc, char **argv) {
-  
-    
-  
-    int i=0;
-  
+int main(int argc, char **argv) {
+    int i = 0;
     char texto[256];
-  
     double LeituraSensorProx[QtddSensoresProx];
-  
-    double AceleradorDireito=1.0, AceleradorEsquerdo=1.0;
-  
-    /* necessary to initialize webots stuff */
-  
-    
-  
-    for(i=0;i<257;i++) texto[i]='0';
-  
-    
-  
+    double AceleradorDireito = 1.0, AceleradorEsquerdo = 1.0;
+    for (i = 0; i < 256; i++) texto[i] = '0';
+
     wb_robot_init();
-  
-    
-  
-    //configurei MOTORES
-  
+
     WbDeviceTag MotorEsquerdo, MotorDireito;
-  
-    WbDeviceTag led0 = wb_robot_get_device("led0");
-    WbDeviceTag led1 = wb_robot_get_device("led1");
-    WbDeviceTag led2 = wb_robot_get_device("led2");
-    WbDeviceTag led3 = wb_robot_get_device("led3");
-    WbDeviceTag led4 = wb_robot_get_device("led4");
-    WbDeviceTag led5 = wb_robot_get_device("led5");
-    WbDeviceTag led6 = wb_robot_get_device("led6");
-    WbDeviceTag led7 = wb_robot_get_device("led7");
-  
+
     MotorEsquerdo = wb_robot_get_device("left wheel motor");
-  
     MotorDireito = wb_robot_get_device("right wheel motor");
-  
-    
-  
+
     wb_motor_set_position(MotorEsquerdo, INFINITY);
-  
     wb_motor_set_position(MotorDireito, INFINITY);
-  
-    
-  
-    wb_motor_set_velocity(MotorEsquerdo,0);
-  
-    wb_motor_set_velocity(MotorDireito,0);
-  
-    
-  
-    
-  
-     //configurei Sensores de Proximidade
-  
-     WbDeviceTag SensorProx[QtddSensoresProx];
-  
-     
-  
-     SensorProx[0] = wb_robot_get_device("ps0");
-  
-     SensorProx[1] = wb_robot_get_device("ps1");
-  
-     SensorProx[2] = wb_robot_get_device("ps2");
-  
-     SensorProx[3] = wb_robot_get_device("ps3");
-  
-     SensorProx[4] = wb_robot_get_device("ps4");
-  
-     SensorProx[5] = wb_robot_get_device("ps5");
-  
-     SensorProx[6] = wb_robot_get_device("ps6");
-  
-     SensorProx[7] = wb_robot_get_device("ps7");
-  
-     
-  
-     wb_distance_sensor_enable(SensorProx[0],TIME_STEP);
-  
-     wb_distance_sensor_enable(SensorProx[1],TIME_STEP);
-  
-     wb_distance_sensor_enable(SensorProx[2],TIME_STEP);
-  
-     wb_distance_sensor_enable(SensorProx[3],TIME_STEP);
-  
-     wb_distance_sensor_enable(SensorProx[4],TIME_STEP);
-  
-     wb_distance_sensor_enable(SensorProx[5],TIME_STEP);
-  
-     wb_distance_sensor_enable(SensorProx[6],TIME_STEP);
-  
-     wb_distance_sensor_enable(SensorProx[7],TIME_STEP);
-  
-  
-  
-      //config leds
-  
-      WbDeviceTag Leds[QtddLeds];
-  
-      Leds[0] = wb_robot_get_device("led0");
-  
-      wb_led_set(Leds[0],-1);
-  
-    
-  
-    
-  
-    /*
-  
-     * You should declare here WbDeviceTag variables for storing
-  
-     * robot devices like this:
-  
-     *  WbDeviceTag my_sensor = wb_robot_get_device("my_sensor");
-  
-     *  WbDeviceTag my_actuator = wb_robot_get_device("my_actuator");
-  
-     */
-  
-  
-  
-    /* main loop
-  
-     * Perform simulation steps of TIME_STEP milliseconds
-  
-     * and leave the loop when the simulation is over
-  
-     */
-  
-    while (wb_robot_step(TIME_STEP) != -1) {
-  
-      for(i=0;i<256;i++) texto[i]=0;
-  
-      //memcpy(texto,0,10);
-  
-      /*
-  
-       * Read the sensors :
-  
-       * Enter here functions to read sensor data, like:
-  
-       *  double val = wb_distance_sensor_get_value(my_sensor);
-  
-       */
-  
-       
-      WbNodeRef box_node = wb_supervisor_node_get_from_def("CAIXA_LEVE");
-      
-      if (box_node != NULL) {
-      // Obtenha o campo de tradução
-      WbFieldRef translation_field = wb_supervisor_node_get_field(box_node, "translation");
-  
-      // Obtenha o valor da tradução (posição)
-      const double *position = wb_supervisor_field_get_sf_vec3f(translation_field);
-  
-      // Imprime a posição da caixa
-      printf("Posição da caixa: [%f, %f, %f]\n", position[0], position[1], position[2]);
-    } else {
-      printf("Nó da caixa não encontrado!\n");
+
+    wb_motor_set_velocity(MotorEsquerdo, 0);
+    wb_motor_set_velocity(MotorDireito, 0);
+
+    WbDeviceTag SensorProx[8];
+    SensorProx[0] = wb_robot_get_device("ps0");
+    SensorProx[1] = wb_robot_get_device("ps1");
+    SensorProx[2] = wb_robot_get_device("ps2");
+    SensorProx[3] = wb_robot_get_device("ps3");
+    SensorProx[4] = wb_robot_get_device("ps4");
+    SensorProx[5] = wb_robot_get_device("ps5");
+    SensorProx[6] = wb_robot_get_device("ps6");
+    SensorProx[7] = wb_robot_get_device("ps7");
+
+    wb_distance_sensor_enable(SensorProx[0],TIME_STEP);
+
+    wb_distance_sensor_enable(SensorProx[1],TIME_STEP);
+
+    wb_distance_sensor_enable(SensorProx[2],TIME_STEP);
+
+    wb_distance_sensor_enable(SensorProx[3],TIME_STEP);
+
+    wb_distance_sensor_enable(SensorProx[4],TIME_STEP);
+
+    wb_distance_sensor_enable(SensorProx[5],TIME_STEP);
+
+    wb_distance_sensor_enable(SensorProx[6],TIME_STEP);
+
+    wb_distance_sensor_enable(SensorProx[7],TIME_STEP);
+
+    WbDeviceTag Leds[10];
+    Leds[0] = wb_robot_get_device("led0");
+    Leds[1] = wb_robot_get_device("led1");
+    Leds[2] = wb_robot_get_device("led2");
+    Leds[3] = wb_robot_get_device("led3");
+    Leds[4] = wb_robot_get_device("led4");
+    Leds[5] = wb_robot_get_device("led5");
+    Leds[6] = wb_robot_get_device("led6");
+    Leds[7] = wb_robot_get_device("led7");
+    Leds[8] = wb_robot_get_device("led8");
+    Leds[9] = wb_robot_get_device("led9");
+
+    for (i = 0; i < 10; i++) {
+        wb_led_set(Leds[i], 0);
     }
-      
-      /* Process sensor data here */
-  
-      for(i=0;i<QtddSensoresProx;i++){
-  
-         LeituraSensorProx[i]= wb_distance_sensor_get_value(SensorProx[i])-60;
-  
-         sprintf(texto,"%s|%d: %5.2f  ",texto,i,LeituraSensorProx[i]);
-         
-         
-      }
-  
-      printf("%s\n",texto);
-  
-      wb_led_set(Leds[0], wb_led_get(Leds[0])*-1);
-  
-      /*
-  
-       * Enter here functions to send actuator commands, like:
-  
-       * wb_motor_set_position(my_actuator, 10.0);
-  
-       */
-  
-      
-  
-      if(LeituraSensorProx[0]>10){
-  
-        AceleradorDireito = -1;
-  
-        AceleradorEsquerdo = 1;}
-  
-      else {
-  
-        AceleradorDireito = 1;
-  
-        AceleradorEsquerdo = 1;}
-  
-   
-  
-      
-  
-      
-  
-      wb_motor_set_velocity(MotorEsquerdo,6.28*AceleradorEsquerdo);
-  
-      wb_motor_set_velocity(MotorDireito, 6.28*AceleradorDireito);
-  
-  
-  
-    };
-  
-  
-  
-    /* Enter your cleanup code here */
-  
-  
-  
-    /* This is necessary to cleanup webots resources */
-  
+    
+    WbNodeRef constCaixa = wb_supervisor_node_get_from_def("CAIXA_LEVE");
+    const double *posicao_caixa_inicial = wb_supervisor_node_get_position(constCaixa);
+    double vector[3] = {posicao_caixa_inicial[0], posicao_caixa_inicial[1], posicao_caixa_inicial[2]};
+    
+    while (wb_robot_step(TIME_STEP) != -1) {
+        for (i = 0; i < 256; i++) texto[i] = 0;
+
+        for (i = 0; i < QtddSensoresProx; i++) {
+            LeituraSensorProx[i] = wb_distance_sensor_get_value(SensorProx[i]) - 60;
+            sprintf(texto, "%s|%d: %5.2f  ", texto, i, LeituraSensorProx[i]);
+        }
+
+        printf("%s\n", texto);
+
+        const double *posicao_caixa_atual = wb_supervisor_node_get_position(constCaixa);
+
+        if (fabs(vector[0] - posicao_caixa_atual[0]) > 0.001 ||
+            fabs(vector[1] - posicao_caixa_atual[1]) > 0.001 ||
+            fabs(vector[2] - posicao_caixa_atual[2]) > 0.001) {
+            
+            AceleradorDireito = 0;
+            AceleradorEsquerdo = 0;
+            wb_motor_set_velocity(MotorEsquerdo, 0);
+            wb_motor_set_velocity(MotorDireito, 0);
+
+            for (i = 0; i < QtddLeds; i++) {
+                wb_led_set(Leds[i], 1);
+            }
+            printf("ACHOU  A CAIXA\n");
+            break;
+        }
+
+        if (LeituraSensorProx[0] > 10) {
+            AceleradorDireito = -1;
+            AceleradorEsquerdo = 1;
+        } else {
+            AceleradorDireito = 1.0;
+            AceleradorEsquerdo = 1.0;
+        }
+
+        wb_motor_set_velocity(MotorEsquerdo, 6.28 * AceleradorEsquerdo);
+        wb_motor_set_velocity(MotorDireito, 6.28 * AceleradorDireito);
+    }
+
     wb_robot_cleanup();
-  
-  
-  
+
     return 0;
-  
-  }
+}
